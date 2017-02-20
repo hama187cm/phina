@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+ 
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    
+    <title>${title}</title>
+    <meta name="description" content="${description}" />
+    <script src="https://cdn.rawgit.com/phi-jp/phina.js/develop/build/phina.js"></script>
+    <script>${script}   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<default
+// ピースクラス
+phina.define('Piece', {
+  // RectangleShapeを継承
+  superClass: 'phina.display.RectangleShape',
+    // コンストラクタ
+//    init: function(num) {
+    init: function(num, pieceSize) {
+      if(pieceSize==null){pieceSize=PIECE_SIZE;}
+      // 親クラス初期化
+      this.superInit({
+        width: pieceSize,
+        height: pieceSize,
+        cornerRadius: 5,
+        fill:  'white',
+        stroke: '#EEEEEE',
+      });
+      // 数字
+      this.num = num;
+      // 数字表示用ラベル
+      this.label = Label({
+        text: this.num + '',
+        fontSize: pieceSize * 0.5,
+        fill: '#CCCCCC',
+      }).addChildTo(this)
+        .hide();
+      if( ! isFinite(num)){
+        this.label.y = this.label.y +5;
+      }
+      
+      //numに値があればタッチを有効に、nullならhide
+      if(num===null){ //||num>=0){
+        this.hide();
+      }else{
+        this.setInteractive(true);
+      }    },
+    //update: function(){    }
+    onpointstart: function(){
+      if(this.label.visible){  this.label.hide();
+      }else{                   this.label.show();
+      }
+    },
+    onpointmove: function(e) {
+      this.x += e.pointer.dx;
+      this.y += e.pointer.dy;
+    },
+});
+
+// ==タイトルシーン ===============
+phina.define('TitleScene', {
+  superClass: 'DisplayScene',
+  init: function() {
+    this.superInit();
+    var label = Label('.').addChildTo(this);
+    label.x = label.y = 100;
+  },
+  onclick:function(){
+    this.exit();
+  },
+});
+
+/**
+ * TitleScene
+ */
+phina.define("TitleScene0", {
+  superClass : "phina.game.TitleScene",
+  init: function() {
+    this.superInit({
+      title :  "０",
+      backgroundColor: 'rgb(20,20,20)',
+      width: SCREEN_WIDTH,
+      height: SCREEN_HEIGHT,
+    });
+    var label = Label({ text: ' 。\n',
+                        fontSize: 20,
+                        fill:"white",
+                }).addChildTo(this);
+    label.x = this.gridX.center();
+    label.y = this.gridY.center()+20;
+  },
+});
+
+phina.define('SceneSequence', {
+  superClass: 'ManagerScene',
+  
+  init: function() {
+    this.superInit({
+      scenes: [
+        {
+          label: "TitleScene",
+          className: "TitleScene",
+          nextLabel: "MainScene"
+        },
+        {
+          label: "MainScene",
+          className: "MainScene",
+          nextLabel: "TitleScene"
+          //nextLabel: "SubScene"
+        },
+      ]
+    });
+  }
+});
+
+// メイン
+var SCREEN_WIDTH  = 400;
+var SCREEN_HEIGHT = 400;
+phina.main(function() {
+  var app = GameApp({
+    // MainScene から開始
+    startLabel: 'title', //TitleScene
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    assets: ASSETS,
+    //query: "#app",
+  });
+  app.run();
+  
+  app.replaceScene(SceneSequence());
+});  
+    </script>
+  </head>
+  <body>
+    <canvas id="app"></canvas>
+  </body>
+</html>
